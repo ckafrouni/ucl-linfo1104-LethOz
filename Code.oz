@@ -53,6 +53,11 @@ in
       %            )
       fun {Next Spaceship Instruction}
          {Browse Instruction}
+         % case Instruction
+         % of forward then nil
+         % [] turn(left) then nil
+         % [] turn(right) then nil
+         % end
          Spaceship
       end
 
@@ -67,19 +72,34 @@ in
       % strategy ::= <instruction> '|' <strategy>
       %            | repeat(<strategy> times:<integer>) '|' <strategy>
       %            | nil
+      %
+      % CHRIS : TODO CHECK IF CANNOT BE FASTER (MAYBE THREADS ?)
       fun {DecodeStrategy Strategy}
-         [
-            fun{$ Spaceship}
-               Spaceship
+         fun {Router Instruction}
+            case Instruction
+            of forward then fun {$ Spaceship} {Next Spaceship forward} end
+            [] turn(left) then fun {$ Spaceship} {Next Spaceship turn(left)} end
+            [] turn(right) then fun {$ Spaceship} {Next Spaceship turn(right)} end
+            [] repeat(Strategy times:N) then E Repeat in
+               fun {Repeat E N} if N == 0 then nil else E|{Repeat E N-1} end end
+               thread E = {DecodeStrategy Strategy} end
+               thread {Repeat E N} end
+            else raise unsupportedInstruction(Instruction) end
             end
-         ]
+         end
+         L
+      in
+         L = {List.flatten {List.map Strategy Router}}
+         {Browse Strategy}
+         {Browse L}
+         L
       end
 
       % Options
       Options = options(
 		   % Fichier contenant le scénario (depuis Dossier)
 		   % Path of the scenario (relative to Dossier)
-		   scenario:'scenario/scenario_crazy.oz'
+		   scenario:'scenario/scenario_test_moves.oz'
 		   % Utilisez cette touche pour quitter la fenêtre
 		   % Use this key to leave the graphical mode
 		   closeKey:'Escape'
@@ -88,7 +108,7 @@ in
 		   debug: true
 		   % Instants par seconde, 0 spécifie une exécution pas à pas. (appuyer sur 'Espace' fait avancer le jeu d'un pas)
 		   % Steps per second, 0 for step by step. (press 'Space' to go one step further)
-		   frameRate: 5
+		   frameRate: 0
 		)
    end
 
