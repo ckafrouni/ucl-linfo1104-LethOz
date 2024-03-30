@@ -229,7 +229,7 @@ in
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Revert nil}
                     effects: nil
                 )
-                [] wormhole(x:X y:Y) then % TODO (chris) : There may be a step missing here
+                [] wormhole(x:X y:Y) then % TODO (chris) : There may be a bug (see pdf)
                     spaceship(
                         positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
                         effects: nil
@@ -239,6 +239,7 @@ in
             end
             Spaceship2
         in
+            {Browse Spaceship}
             {Browse Instruction}
             % 1. apply effects
             Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
