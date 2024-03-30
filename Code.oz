@@ -167,8 +167,13 @@ in
             fun {Forward Spaceship}
                 fun {Advance PrevPos Pos}
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
+                    % TODO (chris) : Clean this up
                 in
-                    {Utils.nextPos Pos To}
+                    if PrevPos == nil then
+                        {Utils.nextPos Pos To}
+                    else
+                        PrevPos
+                    end
                 end
             in
                 spaceship(
@@ -214,7 +219,7 @@ in
                 case Effect
                 of scrap then Last = {List.last Spaceship.positions} in spaceship(
                     positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
-                    effects: nil % TODO (chris) : Do we remove all effects ?
+                    effects: nil
                     )
                 [] revert then 
                     fun {Revert PrevPos Pos} 
@@ -224,18 +229,17 @@ in
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Revert nil}
                     effects: nil
                 )
-                [] wormhole(x:_ y:_) then % TODO (chris) : Implement wormhole
-                    Spaceship
-                    % spaceship(
-                    %     positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
-                    %     effects: Spaceship.effects
-                    % )
+                [] wormhole(x:X y:Y) then % TODO (chris) : There may be a step missing here
+                    spaceship(
+                        positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
+                        effects: nil
+                    )
                 else raise unsupportedEffect(Effect) end
                 end
             end
             Spaceship2
         in
-            {Browse Instruction} % {Browse Spaceship}
+            {Browse Instruction}
             % 1. apply effects
             Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
             % 2. apply instruction
