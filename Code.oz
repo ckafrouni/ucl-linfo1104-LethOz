@@ -23,7 +23,7 @@ EBNF Grammar for the spaceship game
         effects: [scrap|revert|wormhole(x:<P> y:<P>)|... ...]
     )
 
-strategy ::=
+<strategy> ::=
     <instruction> '|' <strategy>
     | repeat(<strategy> times:<integer>) '|' <strategy>
     | nil
@@ -222,9 +222,14 @@ in
                     in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
                 in spaceship(
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Revert nil}
-                    effects: nil % TODO (chris) : Do we remove all effects ?
+                    effects: nil
                 )
-                % [] wormhole(x:X y:Y) then % TODO (chris) : Implement wormhole
+                [] wormhole(x:_ y:_) then % TODO (chris) : Implement wormhole
+                    Spaceship
+                    % spaceship(
+                    %     positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
+                    %     effects: Spaceship.effects
+                    % )
                 else raise unsupportedEffect(Effect) end
                 end
             end
@@ -233,13 +238,12 @@ in
             {Browse Instruction} % {Browse Spaceship}
             % 1. apply effects
             Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
-            
             % 2. apply instruction
             case Instruction
             of forward then {Instructions.forward Spaceship2}
             [] turn(left) then {Instructions.turnLeft Spaceship2}
             [] turn(right) then {Instructions.turnRight Spaceship2}
-            else {Browse expressionNotSupported(Instruction)} Spaceship2
+            else raise unsupportedInstruction(Instruction) end
             end
         end
 

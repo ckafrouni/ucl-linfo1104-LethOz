@@ -16,12 +16,14 @@ in
                     seismicCharge: NoBomb)
             ]
         bonuses: [
-            bonus(position:pos(x:23 y:3) color:blue  effect:revert target:catcher)
-            bonus(position:pos(x:2 y:12) color:blue  effect:revert target:catcher)
+            bonus(position:pos(x:23 y:3) color:red  effect:revert target:catcher)
+            bonus(position:pos(x:2 y:12) color:red  effect:revert target:catcher)
 
             bonus(position:pos(x:12 y:12) color:orange  effect:scrap target:catcher)
             bonus(position:pos(x:20 y:12) color:orange  effect:scrap target:catcher)
             bonus(position:pos(x:5 y:8) color:orange  effect:scrap target:catcher)
+
+		    bonus(position:pos(x:6 y:3)   color:yellow effect:wormhole(x:12 y:17) target:catcher)
         ]
         bombs: nil
     )
