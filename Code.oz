@@ -54,7 +54,6 @@ in
     %%%%%%%%%%%%%%%%%%%%%%%%%
     %  Our code goes here   %
     % ↓    ↓    ↓    ↓    ↓ %
-    %%%%%%%%%%%%%%%%%%%%%%%%%
 
     local
         % Namespaces
@@ -87,7 +86,7 @@ in
 
             /**
              * Gets the new absolute direction after turn
-             * @arg Turn : left|right
+             * @arg Turn : left|right|revert
              * @arg Dir : <direction>
              * @ret : <direction>
              */
@@ -107,6 +106,43 @@ in
                     [] south then west
                     [] west then north
                     end
+                [] revert then
+                    case Dir
+                    of north then south
+                    [] south then north
+                    [] west then east
+                    [] east then west
+                    end
+                end
+            end
+
+            /**
+             * Next position
+             * @arg Pos : <pos>
+             * @arg Dir : <direction>
+             * @ret : <pos>
+             */
+            fun {NextPos Pos Dir}
+                case Pos.to
+                of north then pos(x:Pos.x y:(Pos.y-1) to:Dir)
+                [] south then pos(x:Pos.x y:(Pos.y+1) to:Dir)
+                [] west then pos(x:(Pos.x-1) y:Pos.y to:Dir)
+                [] east then pos(x:(Pos.x+1) y:Pos.y to:Dir)
+                end
+            end
+
+            /**
+             * Previous position
+             * @arg Pos : <pos>
+             * @arg Dir : <direction>
+             * @ret : <pos>
+             */
+            fun {PrevPos Pos Dir}
+                case Pos.to
+                of north then pos(x:Pos.x y:(Pos.y+1) to:Dir)
+                [] south then pos(x:Pos.x y:(Pos.y-1) to:Dir)
+                [] west then pos(x:(Pos.x+1) y:Pos.y to:Dir)
+                [] east then pos(x:(Pos.x-1) y:Pos.y to:Dir)
                 end
             end
         in
@@ -114,6 +150,8 @@ in
                 mapS: MapS
                 repeat: Repeat
                 dirAfterTurn: DirAfterTurn
+                nextPos: NextPos
+                prevPos: PrevPos
             )
         end
 
@@ -130,12 +168,7 @@ in
                 fun {Advance PrevPos Pos}
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
                 in
-                    case Pos.to
-                    of north then pos(x:Pos.x y:(Pos.y-1) to:To)
-                    [] south then pos(x:Pos.x y:(Pos.y+1) to:To)
-                    [] west then pos(x:(Pos.x-1) y:Pos.y to:To)
-                    [] east then pos(x:(Pos.x+1) y:Pos.y to:To)
-                    end
+                    {Utils.nextPos Pos To}
                 end
             in
                 spaceship(
@@ -176,12 +209,37 @@ in
          * @ret : <spaceship>
          */
         fun {Next Spaceship Instruction}
-            % TODO (chris) : How to handle effects ?
-            {Browse Instruction}
+            fun {ApplyEffect Spaceship Effect}
+                {Browse Effect}
+                case Effect
+                of scrap then Last = {List.last Spaceship.positions} in spaceship(
+                    positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
+                    effects: nil % TODO (chris) : Do we remove all effects ?
+                    )
+                [] revert then 
+                    fun {Revert PrevPos Pos} 
+                        To = if PrevPos == nil then Pos.to else PrevPos.to end 
+                    in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
+                in spaceship(
+                    positions: {Utils.mapS {List.reverse Spaceship.positions} Revert nil}
+                    effects: nil % TODO (chris) : Do we remove all effects ?
+                )
+                % [] wormhole(x:X y:Y) then % TODO (chris) : Implement wormhole
+                else raise unsupportedEffect(Effect) end
+                end
+            end
+            Spaceship2
+        in
+            {Browse Instruction} % {Browse Spaceship}
+            % 1. apply effects
+            Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
+            
+            % 2. apply instruction
             case Instruction
-            of forward then {Instructions.forward Spaceship}
-            [] turn(left) then {Instructions.turnLeft Spaceship}
-            [] turn(right) then {Instructions.turnRight Spaceship}
+            of forward then {Instructions.forward Spaceship2}
+            [] turn(left) then {Instructions.turnLeft Spaceship2}
+            [] turn(right) then {Instructions.turnRight Spaceship2}
+            else {Browse expressionNotSupported(Instruction)} Spaceship2
             end
         end
 
@@ -217,7 +275,6 @@ in
         end
     end
 
-    %%%%%%%%%%%%%%%%%%%%%%%%%
     % ↑    ↑    ↑    ↑    ↑ %
     %   Our code end here   %
     %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -225,7 +282,7 @@ in
     local
         Options = options(
             % Path of the scenario (relative to Dossier)
-            % scenario:'scenario/scenario_crazy.oz'
+            % scenario:'scenario/scenario_test_moves.oz'
             scenario:'scenario/Scenario.oz'
             % Use this key to leave the graphical mode
             closeKey:'Escape'
