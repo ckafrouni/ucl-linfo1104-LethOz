@@ -259,6 +259,7 @@ in
                 wormhole: Wormhole)
         end
 
+
         /**
          * The function that computes the next attributes of the spaceship given the effects
          * affecting him as well as the instruction.
@@ -267,34 +268,46 @@ in
          * @ret : <spaceship>
          */
         fun {Next Spaceship Instruction}
-            fun {ApplyEffect Spaceship Effect}
-                {Browse Effect}
-                case Effect
-                of scrap then {Effects.scrap Spaceship}
-                [] revert then {Effects.revert Spaceship}
-                [] wormhole(x:X y:Y) then {Effects.wormhole Spaceship X Y}
-                % TODO : Add at least two more effects.
-                else raise unsupportedEffect(Effect) end
+            /**
+             * Applies the effects to the spaceship.
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            fun {ApplyEffects Spaceship}
+                fun {ApplyEffect Spaceship Effect}
+                    case Effect
+                    of scrap then {Effects.scrap Spaceship}
+                    [] revert then {Effects.revert Spaceship}
+                    [] wormhole(x:X y:Y) then {Effects.wormhole Spaceship X Y}
+                    % TODO : Add at least two more effects.
+                    else raise unsupportedEffect(Effect) end
+                    end
                 end
-            end
+            in {List.foldL Spaceship.effects ApplyEffect Spaceship} end
+
+            /**
+             * Applies the instruction to the spaceship.
+             * @arg Spaceship : <spaceship>
+             * @arg Instruction : <instruction>
+             * @ret : <spaceship>
+             */
             fun {ApplyInstruction Spaceship Instruction}
                 case Instruction
-                of forward then {Instructions.forward Spaceship2}
-                [] turn(left) then {Instructions.turnLeft Spaceship2}
-                [] turn(right) then {Instructions.turnRight Spaceship2}
+                of forward then {Instructions.forward Spaceship}
+                [] turn(left) then {Instructions.turnLeft Spaceship}
+                [] turn(right) then {Instructions.turnRight Spaceship}
                 else raise unsupportedInstruction(Instruction) end
                 end
             end
-            Spaceship2
         in
-            % {Browse Spaceship}
-            {Browse Instruction}
-            % 1. apply effects
-            Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
-            % 2. apply instruction
-            {ApplyInstruction Spaceship2 Instruction}
+            {Browse Instruction} % {Browse Spaceship}
+            local S1 in
+                % 1. apply effects
+                S1 = {ApplyEffects Spaceship}
+                % 2. apply instruction
+                {ApplyInstruction S1 Instruction}
+            end
         end
-
 
         /**
          * The function that decodes the strategy of a spaceship into a list of functions. Each corresponds
@@ -320,12 +333,7 @@ in
                 else raise unsupportedInstruction(Instruction) end
                 end
             end
-            L
-        in
-            L = {List.flatten {List.map Strategy InstToFunc}}
-            % {Browse Strategy} {Browse L}
-            L
-        end
+        in {List.flatten {List.map Strategy InstToFunc}} end
     end
 
     % ↑    ↑    ↑    ↑    ↑ %
