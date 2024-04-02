@@ -52,12 +52,12 @@ in
     {Browse LethOzLib.play}
 
     %%%%%%%%%%%%%%%%%%%%%%%%%
-    %  Our code goes here   %
+    % Our code starts here  %
     % ↓    ↓    ↓    ↓    ↓ %
 
     local
         % Namespaces
-        Utils Instructions
+        Utils Instructions Effects
     in
         /*-------------------*
          * NAMESPACE 'Utils' *
@@ -151,9 +151,9 @@ in
                 repeat: Repeat
                 dirAfterTurn: DirAfterTurn
                 nextPos: NextPos
-                prevPos: PrevPos
-            )
+                prevPos: PrevPos)
         end
+
 
         /*--------------------------*
          * NAMESPACE 'Instructions' *
@@ -178,8 +178,7 @@ in
             in
                 spaceship(
                     positions: {Utils.mapS Spaceship.positions Advance nil}
-                    effects: Spaceship.effects
-                )
+                    effects: Spaceship.effects)
             end
 
             /**
@@ -202,8 +201,62 @@ in
             instructions(
                 forward: Forward
                 turnLeft: fun {$ Spaceship} {Instructions.forward {Turn Spaceship left}} end
-                turnRight: fun {$ Spaceship} {Instructions.forward {Turn Spaceship right}} end
-            )
+                turnRight: fun {$ Spaceship} {Instructions.forward {Turn Spaceship right}} end)
+        end
+
+
+        /*----------------------*
+         * NAMESPACE 'Effects'  *
+         *----------------------*/
+        Effects = local
+
+            /**
+             * Scrap effect
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            fun {Scrap Spaceship}
+                Last = {List.last Spaceship.positions}
+            in
+                spaceship(
+                    positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
+                    effects: nil)
+            end
+
+            /**
+             * Revert effect
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            fun {Revert Spaceship}
+                fun {Aux PrevPos Pos}
+                    To = if PrevPos == nil then Pos.to else PrevPos.to end
+                in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
+            in
+                spaceship(
+                    positions: {Utils.mapS {List.reverse Spaceship.positions} Aux nil}
+                    effects: nil)
+            end
+
+            /**
+             * Wormhole effect
+             * @arg Spaceship : <spaceship>
+             * @arg X : <P>
+             * @arg Y : <P>
+             * @ret : <spaceship>
+             */
+            fun {Wormhole Spaceship X Y}
+                % TODO (chris) : There may be a bug (see pdf)
+                spaceship(
+                    positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
+                    effects: nil)
+            end
+
+        in
+            effects(
+                scrap: Scrap
+                revert: Revert
+                wormhole: Wormhole)
         end
 
         /**
@@ -217,40 +270,31 @@ in
             fun {ApplyEffect Spaceship Effect}
                 {Browse Effect}
                 case Effect
-                of scrap then Last = {List.last Spaceship.positions} in spaceship(
-                    positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
-                    effects: nil
-                    )
-                [] revert then 
-                    fun {Revert PrevPos Pos} 
-                        To = if PrevPos == nil then Pos.to else PrevPos.to end 
-                    in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
-                in spaceship(
-                    positions: {Utils.mapS {List.reverse Spaceship.positions} Revert nil}
-                    effects: nil
-                )
-                [] wormhole(x:X y:Y) then % TODO (chris) : There may be a bug (see pdf)
-                    spaceship(
-                        positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
-                        effects: nil
-                    )
+                of scrap then {Effects.scrap Spaceship}
+                [] revert then {Effects.revert Spaceship}
+                [] wormhole(x:X y:Y) then {Effects.wormhole Spaceship X Y}
+                % TODO : Add at least two more effects.
                 else raise unsupportedEffect(Effect) end
+                end
+            end
+            fun {ApplyInstruction Spaceship Instruction}
+                case Instruction
+                of forward then {Instructions.forward Spaceship2}
+                [] turn(left) then {Instructions.turnLeft Spaceship2}
+                [] turn(right) then {Instructions.turnRight Spaceship2}
+                else raise unsupportedInstruction(Instruction) end
                 end
             end
             Spaceship2
         in
-            {Browse Spaceship}
+            % {Browse Spaceship}
             {Browse Instruction}
             % 1. apply effects
             Spaceship2 = {List.foldL Spaceship.effects ApplyEffect Spaceship}
             % 2. apply instruction
-            case Instruction
-            of forward then {Instructions.forward Spaceship2}
-            [] turn(left) then {Instructions.turnLeft Spaceship2}
-            [] turn(right) then {Instructions.turnRight Spaceship2}
-            else raise unsupportedInstruction(Instruction) end
-            end
+            {ApplyInstruction Spaceship2 Instruction}
         end
+
 
         /**
          * The function that decodes the strategy of a spaceship into a list of functions. Each corresponds
@@ -285,7 +329,7 @@ in
     end
 
     % ↑    ↑    ↑    ↑    ↑ %
-    %   Our code end here   %
+    %  Our code ends here   %
     %%%%%%%%%%%%%%%%%%%%%%%%%
 
     local

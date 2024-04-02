@@ -24,7 +24,7 @@ in
             bonus(position:pos(x:5 y:8) color:orange  effect:scrap target:catcher)
 
 		    bonus(position:pos(x:6 y:3)   color:yellow effect:wormhole(x:12 y:17) target:catcher)
-		    bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
+		    % bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
         ]
         bombs: nil
     )
