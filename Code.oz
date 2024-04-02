@@ -245,8 +245,7 @@ in
         in
             effects(
                 scrap: Scrap
-                revert: Revert
-                wormhole: Wormhole)
+                revert: Revert)
         end
 
 
