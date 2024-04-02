@@ -167,7 +167,6 @@ in
             fun {Forward Spaceship}
                 fun {Advance PrevPos Pos}
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
-                    % TODO (chris) : Clean this up
                 in
                     if PrevPos == nil then
                         {Utils.nextPos Pos To}
@@ -176,9 +175,17 @@ in
                     end
                 end
             in
-                spaceship(
-                    positions: {Utils.mapS Spaceship.positions Advance nil}
-                    effects: Spaceship.effects)
+                % The 'wormhole' effect is handled here.
+                case Spaceship.effects
+                of wormhole(x:X y:Y)|_ then
+                    spaceship(
+                        positions: {Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
+                        effects: nil)
+                else
+                    spaceship(
+                        positions: {Utils.mapS Spaceship.positions Advance nil}
+                        effects: Spaceship.effects)
+                end
             end
 
             /**
@@ -194,8 +201,7 @@ in
             in
                 spaceship(
                     positions: Positions
-                    effects: Spaceship.effects
-                )
+                    effects: Spaceship.effects)
             end
         in
             instructions(
@@ -209,7 +215,6 @@ in
          * NAMESPACE 'Effects'  *
          *----------------------*/
         Effects = local
-
             /**
              * Scrap effect
              * @arg Spaceship : <spaceship>
@@ -237,21 +242,6 @@ in
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Aux nil}
                     effects: nil)
             end
-
-            /**
-             * Wormhole effect
-             * @arg Spaceship : <spaceship>
-             * @arg X : <P>
-             * @arg Y : <P>
-             * @ret : <spaceship>
-             */
-            fun {Wormhole Spaceship X Y}
-                % TODO (chris) : There may be a bug (see pdf)
-                spaceship(
-                    positions: pos(x:X y:Y to:(Spaceship.positions.1).to)|Spaceship.positions.2
-                    effects: nil)
-            end
-
         in
             effects(
                 scrap: Scrap
@@ -278,7 +268,7 @@ in
                     case Effect
                     of scrap then {Effects.scrap Spaceship}
                     [] revert then {Effects.revert Spaceship}
-                    [] wormhole(x:X y:Y) then {Effects.wormhole Spaceship X Y}
+                    [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
                     % TODO : Add at least two more effects.
                     else raise unsupportedEffect(Effect) end
                     end
@@ -300,7 +290,7 @@ in
                 end
             end
         in
-            {Browse Instruction} % {Browse Spaceship}
+            {Browse Instruction#Spaceship.effects} % {Browse Spaceship}
             local S1 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
