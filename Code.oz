@@ -32,8 +32,8 @@ EBNF Grammar for the spaceship game
 
 local
     % Please replace this path with your own working directory that contains LethOzLib.ozf
-    % Dossier = {Property.condGet cwdir '/home/max/FSAB1402/Projet-2017'} % Unix example
-    Dossier = {Property.condGet cwdir '/home/nicolas/Progr/Projet OZ/ucl-linfo1104-LethOz'}
+    Dossier = {Property.condGet cwdir '.'}
+    % Dossier = {Property.condGet cwdir '/home/nicolas/Progr/Projet OZ/ucl-linfo1104-LethOz'}
     % Dossier = {Property.condGet cwdir 'C:\\Users\Thomas\Documents\UCL\Oz\Projet'} % Windows example.
     LethOzLib
 
@@ -124,10 +124,18 @@ in
              */
             fun {NextPos Pos Dir}
                 case Pos.to
-                of north then pos(x:Pos.x y:(Pos.y-1) to:Dir)
-                [] south then pos(x:Pos.x y:(Pos.y+1) to:Dir)
-                [] west then pos(x:(Pos.x-1) y:Pos.y to:Dir)
-                [] east then pos(x:(Pos.x+1) y:Pos.y to:Dir)
+                of north then
+                    if (Pos.y-1) == 0 then pos(x:Pos.x y:24 to:Dir)
+                    else pos(x:Pos.x y:(Pos.y-1) to:Dir) end
+                [] south then 
+                    if (Pos.y+1) == 25 then pos(x:Pos.x y:1 to:Dir)
+                    else pos(x:Pos.x y:(Pos.y+1) to:Dir) end
+                [] west then 
+                    if (Pos.x-1) == 0 then pos(x:24 y:Pos.y to:Dir)
+                    else pos(x:(Pos.x-1) y:Pos.y to:Dir) end
+                [] east then 
+                    if (Pos.x+1) == 25 then pos(x:1 y:Pos.y to:Dir)
+                    else pos(x:(Pos.x+1) y:Pos.y to:Dir) end
                 end
             end
 
@@ -204,7 +212,7 @@ in
                 spaceship(
                     positions: Positions
                     effects: Spaceship.effects
-                    malware: Spaceship.malware-1)
+                    malware: Spaceship.malware)
             end
         in
             instructions(
@@ -254,13 +262,10 @@ in
              * @ret : <spaceship>
              */
             fun {Malware Spaceship} 
-                
                 spaceship(
                     positions: Spaceship.positions
                     effects: nil
-                    malware: 5
-                )
-
+                    malware: 5)
             end
 
             /**
@@ -273,8 +278,7 @@ in
                 spaceship(
                     positions: Spaceship.positions
                     effects: nil 
-                    malware: Spaceship.malware
-                )
+                    malware: Spaceship.malware)
             end
 
         in
@@ -382,7 +386,7 @@ in
             % Graphical mode
             debug: true
             % Steps per second, 0 for step by step. (press 'Space' to go one step further)
-            frameRate: 5
+            frameRate: 1
         )
         R = {LethOzLib.play Dossier#'/'#Options.scenario Next DecodeStrategy Options}
     in
