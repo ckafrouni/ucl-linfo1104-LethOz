@@ -188,13 +188,11 @@ in
                 of wormhole(x:X y:Y)|_ then
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
-                        effects: nil
-                        malware: Spaceship.malware-1)
+                        effects: nil)
                 else
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance nil}
-                        effects: Spaceship.effects
-                        malware: Spaceship.malware-1)
+                        effects: Spaceship.effects)
                 end
             end
 
@@ -211,8 +209,7 @@ in
             in
                 spaceship(
                     positions: Positions
-                    effects: Spaceship.effects
-                    malware: Spaceship.malware)
+                    effects: Spaceship.effects)
             end
         in
             instructions(
@@ -236,8 +233,7 @@ in
             in
                 spaceship(
                     positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
-                    effects: nil
-                    malware: Spaceship.malware)
+                    effects: nil)
             end
 
             /**
@@ -252,8 +248,7 @@ in
             in
                 spaceship(
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Aux nil}
-                    effects: nil
-                    malware: Spaceship.malware)
+                    effects: nil)
             end
 
             /**
@@ -263,10 +258,17 @@ in
              * @ret : <spaceship>
              */
             fun {Malware Spaceship N} 
-                spaceship(
+                if N == 0 then spaceship(
                     positions: Spaceship.positions
-                    effects: nil
-                    malware: N)
+                    effects: {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}
+                    malware: Spaceship.malware)
+                else 
+                    spaceship(
+                        positions: Spaceship.positions
+                        effects: malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}
+                        malware: N
+                        flipTurns: true)
+                end
             end
 
             /**
@@ -278,8 +280,7 @@ in
             fun {Shield Spaceship}
                 spaceship(
                     positions: Spaceship.positions
-                    effects: nil 
-                    malware: Spaceship.malware)
+                    effects: nil)
             end
 
         in
@@ -328,10 +329,10 @@ in
                 case Instruction
                 of forward then {Instructions.forward Spaceship}
                 [] turn(left) then 
-                    if Spaceship.malware > 0 then {Instructions.turnRight Spaceship}
+                    if {Value.hasFeature Spaceship 'flipTurns'} then {Instructions.turnRight Spaceship}
                     else {Instructions.turnLeft Spaceship} end
                 [] turn(right) then 
-                    if Spaceship.malware > 0 then {Instructions.turnLeft Spaceship}
+                    if {Value.hasFeature Spaceship 'flipTurns'} then {Instructions.turnLeft Spaceship}
                     else {Instructions.turnRight Spaceship} end
                 else raise unsupportedInstruction(Instruction) end
                 end
