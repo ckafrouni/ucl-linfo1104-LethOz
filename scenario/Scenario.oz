@@ -3,7 +3,7 @@ local
 in
     scenario(
         bombLatency:3
-        walls:true
+        walls:false
         step: 0
         spaceships: [
                 spaceship(team:red name:gordon
@@ -13,7 +13,8 @@ in
                     effects: nil
                     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
                     strategy: keyboard(left:'Left' right:'Right' intro:nil)
-                    seismicCharge: NoBomb)
+                    seismicCharge: NoBomb
+                    malware: 0)
             ]
         bonuses: [
             bonus(position:pos(x:23 y:3) color:red  effect:revert target:catcher)
@@ -25,6 +26,10 @@ in
 
 		    bonus(position:pos(x:6 y:3)   color:yellow effect:wormhole(x:12 y:17) target:catcher)
 		    bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
+
+            bonus(position:pos(x:15 y:15) color:blue effect:malware target:catcher)
+
+            bonus(position:pos(x:13 y:11) color:black effect:shield target:catcher)
         ]
         bombs: nil
     )

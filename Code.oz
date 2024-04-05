@@ -33,7 +33,7 @@ EBNF Grammar for the spaceship game
 local
     % Please replace this path with your own working directory that contains LethOzLib.ozf
     % Dossier = {Property.condGet cwdir '/home/max/FSAB1402/Projet-2017'} % Unix example
-    Dossier = {Property.condGet cwdir '.'}
+    Dossier = {Property.condGet cwdir '/home/nicolas/Progr/Projet OZ/ucl-linfo1104-LethOz'}
     % Dossier = {Property.condGet cwdir 'C:\\Users\Thomas\Documents\UCL\Oz\Projet'} % Windows example.
     LethOzLib
 
@@ -180,11 +180,13 @@ in
                 of wormhole(x:X y:Y)|_ then
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
-                        effects: nil)
+                        effects: nil
+                        malware: Spaceship.malware-1)
                 else
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance nil}
-                        effects: Spaceship.effects)
+                        effects: Spaceship.effects
+                        malware: Spaceship.malware-1)
                 end
             end
 
@@ -201,7 +203,8 @@ in
             in
                 spaceship(
                     positions: Positions
-                    effects: Spaceship.effects)
+                    effects: Spaceship.effects
+                    malware: Spaceship.malware-1)
             end
         in
             instructions(
@@ -225,7 +228,8 @@ in
             in
                 spaceship(
                     positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
-                    effects: nil)
+                    effects: nil
+                    malware: Spaceship.malware)
             end
 
             /**
@@ -240,12 +244,46 @@ in
             in
                 spaceship(
                     positions: {Utils.mapS {List.reverse Spaceship.positions} Aux nil}
-                    effects: nil)
+                    effects: nil
+                    malware: Spaceship.malware)
             end
+
+            /**
+             * Malware effect
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            fun {Malware Spaceship} 
+                
+                spaceship(
+                    positions: Spaceship.positions
+                    effects: nil
+                    malware: 5
+                )
+
+            end
+
+            /**
+             * Invincibilty effect
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            % TODO (Nico) 
+            fun {Shield Spaceship}
+                spaceship(
+                    positions: Spaceship.positions
+                    effects: nil 
+                    malware: Spaceship.malware
+                )
+            end
+
         in
             effects(
+                team : orange
                 scrap: Scrap
-                revert: Revert)
+                revert: Revert
+                malware: Malware
+                shield: Shield)
         end
 
 
@@ -268,7 +306,8 @@ in
                     of scrap then {Effects.scrap Spaceship}
                     [] revert then {Effects.revert Spaceship}
                     [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
-                    % TODO : Add at least two more effects.
+                    [] malware then {Effects.malware Spaceship}
+                    [] shield then {Effects.shield Spaceship}
                     else raise unsupportedEffect(Effect) end
                     end
                 end
@@ -283,8 +322,12 @@ in
             fun {ApplyInstruction Spaceship Instruction}
                 case Instruction
                 of forward then {Instructions.forward Spaceship}
-                [] turn(left) then {Instructions.turnLeft Spaceship}
-                [] turn(right) then {Instructions.turnRight Spaceship}
+                [] turn(left) then 
+                    if Spaceship.malware > 0 then {Instructions.turnRight Spaceship}
+                    else {Instructions.turnLeft Spaceship} end
+                [] turn(right) then 
+                    if Spaceship.malware > 0 then {Instructions.turnLeft Spaceship}
+                    else {Instructions.turnRight Spaceship} end
                 else raise unsupportedInstruction(Instruction) end
                 end
             end
