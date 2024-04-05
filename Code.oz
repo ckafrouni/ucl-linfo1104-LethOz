@@ -224,7 +224,7 @@ in
          *----------------------*/
         Effects = local
             /**
-             * Scrap effect
+             * Scrap effect -> increases the spaceship's length by 1
              * @arg Spaceship : <spaceship>
              * @ret : <spaceship>
              */
@@ -237,7 +237,7 @@ in
             end
 
             /**
-             * Revert effect
+             * Revert effect -> places the head of the spaceship at his tail
              * @arg Spaceship : <spaceship>
              * @ret : <spaceship>
              */
@@ -252,7 +252,7 @@ in
             end
 
             /**
-             * Malware effect
+             * Malware effect -> inverts the left and right command for every spaceship excepts the catcher's for N turns
              * @arg Spaceship : <spaceship>
              * @arg N : <integer>
              * @ret : <spaceship>
@@ -273,24 +273,23 @@ in
             end
 
             /**
-             * Invincibilty effect
+             * Shrink effect -> shrinks the spaceship's length by N
              * @arg Spaceship : <spaceship>
+             * @arg N : <integer>
              * @ret : <spaceship>
              */
-            % TODO (Nico) 
-            fun {Shield Spaceship}
+            fun {Shrink Spaceship N}
                 spaceship(
-                    positions: Spaceship.positions
+                    positions: {List.take Spaceship.positions {List.length Spaceship.positions}-N}
                     effects: nil)
             end
 
         in
             effects(
-                team : orange
                 scrap: Scrap
                 revert: Revert
                 malware: Malware
-                shield: Shield)
+                shrink: Shrink)
         end
 
 
@@ -314,7 +313,7 @@ in
                     [] revert then {Effects.revert Spaceship}
                     [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
                     [] malware(N) then {Effects.malware Spaceship N}
-                    [] shield then {Effects.shield Spaceship}
+                    [] shrink(N) then {Effects.shrink Spaceship N}
                     else raise unsupportedEffect(Effect) end
                     end
                 end

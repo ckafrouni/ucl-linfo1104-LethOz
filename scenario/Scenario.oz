@@ -16,13 +16,13 @@ in
                     seismicCharge: NoBomb
                     malware: 0)
 
-                spaceship(team:blue name:chris
-                    positions: [pos(x:18 y:15 to:west) pos(x:19 y:15 to:west) pos(x:19 y:15 to:west)]
-                    effects: nil
-                    % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
-                    strategy: keyboard(left:'d' right:'f' intro:nil)
-                    seismicCharge: NoBomb
-                    malware: 0)
+                % spaceship(team:blue name:chris
+                %     positions: [pos(x:18 y:15 to:west) pos(x:19 y:15 to:west) pos(x:19 y:15 to:west)]
+                %     effects: nil
+                %     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
+                %     strategy: keyboard(left:'d' right:'f' intro:nil)
+                %     seismicCharge: NoBomb
+                %     prev_position: nil)
             ]
         bonuses: [
             bonus(position:pos(x:23 y:3) color:red  effect:revert target:catcher)
@@ -41,7 +41,8 @@ in
 		    bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
 
             bonus(position:pos(x:12 y:3) color:'#808000' effect:malware(6) target:catcher)
-            bonus(position:pos(x:14 y:3) color:orange  effect:scrap target:catcher)
+
+            bonus(position:pos(x:14 y:3) color:red  effect:shrink(2) target:all)
 
         ]
         bombs: nil
