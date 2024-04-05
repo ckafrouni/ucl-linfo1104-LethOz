@@ -44,8 +44,8 @@ local
     % Width and height of the grid
     % (1 <= x <= W=24, 1 <= y <= H=24)
     % TODO (chris) : use these values.
-    % W = 24
-    % H = 24
+    W = 24
+    H = 24
 in
     % Please do NOT change this line.
     [LethOzLib] = {Link [Dossier#'/'#'LethOzLib.ozf']}
@@ -117,7 +117,7 @@ in
             end
 
             /**
-             * Next position
+             * Next position (moves back to the other side if out of bounds)
              * @arg Pos : <pos>
              * @arg Dir : <direction>
              * @ret : <pos>
@@ -125,16 +125,16 @@ in
             fun {NextPos Pos Dir}
                 case Pos.to
                 of north then
-                    if (Pos.y-1) == 0 then pos(x:Pos.x y:24 to:Dir)
+                    if Pos.y == 1 then pos(x:Pos.x y:H to:Dir)
                     else pos(x:Pos.x y:(Pos.y-1) to:Dir) end
                 [] south then 
-                    if (Pos.y+1) == 25 then pos(x:Pos.x y:1 to:Dir)
+                    if (Pos.y) == H then pos(x:Pos.x y:1 to:Dir)
                     else pos(x:Pos.x y:(Pos.y+1) to:Dir) end
                 [] west then 
-                    if (Pos.x-1) == 0 then pos(x:24 y:Pos.y to:Dir)
+                    if Pos.x == 1 then pos(x:W y:Pos.y to:Dir)
                     else pos(x:(Pos.x-1) y:Pos.y to:Dir) end
                 [] east then 
-                    if (Pos.x+1) == 25 then pos(x:1 y:Pos.y to:Dir)
+                    if Pos.x == W then pos(x:1 y:Pos.y to:Dir)
                     else pos(x:(Pos.x+1) y:Pos.y to:Dir) end
                 end
             end
@@ -259,13 +259,14 @@ in
             /**
              * Malware effect
              * @arg Spaceship : <spaceship>
+             * @arg N : <integer>
              * @ret : <spaceship>
              */
-            fun {Malware Spaceship} 
+            fun {Malware Spaceship N} 
                 spaceship(
                     positions: Spaceship.positions
                     effects: nil
-                    malware: 5)
+                    malware: N)
             end
 
             /**
@@ -310,7 +311,7 @@ in
                     of scrap then {Effects.scrap Spaceship}
                     [] revert then {Effects.revert Spaceship}
                     [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
-                    [] malware then {Effects.malware Spaceship}
+                    [] malware(N) then {Effects.malware Spaceship N}
                     [] shield then {Effects.shield Spaceship}
                     else raise unsupportedEffect(Effect) end
                     end

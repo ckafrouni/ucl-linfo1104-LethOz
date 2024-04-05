@@ -32,10 +32,15 @@ in
             bonus(position:pos(x:20 y:12) color:orange  effect:scrap target:catcher)
             bonus(position:pos(x:5 y:8) color:orange  effect:scrap target:catcher)
 
+            % Mega scrap (this is a bonus that gives 3 scrap)
+            bonus(position:pos(x:17 y:8) color:green  effect:scrap target:catcher)
+            bonus(position:pos(x:17 y:8) color:green  effect:scrap target:catcher)
+            bonus(position:pos(x:17 y:8) color:green  effect:scrap target:catcher)
+
 		    bonus(position:pos(x:6 y:3)   color:yellow effect:wormhole(x:12 y:17) target:catcher)
 		    bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
 
-            bonus(position:pos(x:12 y:3) color:blue effect:malware target:catcher)
+            bonus(position:pos(x:12 y:3) color:'#808000' effect:malware(6) target:catcher)
         ]
         bombs: nil
     )
