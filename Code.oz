@@ -258,16 +258,17 @@ in
              * @ret : <spaceship>
              */
             fun {Malware Spaceship N} 
-                if N == 0 then spaceship(
-                    positions: Spaceship.positions
-                    effects: {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}
-                    malware: Spaceship.malware)
+                if N == 0 then
+                    {Record.subtract 
+                        {Record.adjoinAt Spaceship 
+                            effects {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}}
+                        flipTurns}
                 else 
-                    spaceship(
-                        positions: Spaceship.positions
-                        effects: malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}
-                        malware: N
-                        flipTurns: true)
+                    {Record.adjoinAt 
+                        {Record.adjoinAt
+                            Spaceship
+                            effects malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}}
+                        flipTurns true}
                 end
             end
 
@@ -388,7 +389,7 @@ in
             % Graphical mode
             debug: true
             % Steps per second, 0 for step by step. (press 'Space' to go one step further)
-            frameRate: 1
+            frameRate: 2
         )
         R = {LethOzLib.play Dossier#'/'#Options.scenario Next DecodeStrategy Options}
     in

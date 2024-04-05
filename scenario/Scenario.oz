@@ -41,6 +41,8 @@ in
 		    bonus(position:pos(x:12 y:17) color:yellow effect:wormhole(x:6 y:3) target:catcher)
 
             bonus(position:pos(x:12 y:3) color:'#808000' effect:malware(6) target:catcher)
+            bonus(position:pos(x:14 y:3) color:orange  effect:scrap target:catcher)
+
         ]
         bombs: nil
     )
