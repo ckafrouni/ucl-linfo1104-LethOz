@@ -257,14 +257,9 @@ in
                             effects {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}}
                         flipTurns}
                 else
-                    % {Record.adjoinList Spaceship [
-                    %     effects#malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}
-                    %     flipTurns#true ]}
-                    {Record.adjoinAt 
-                        {Record.adjoinAt
-                            Spaceship
-                            effects malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}}
-                        flipTurns true}
+                    {Record.adjoinList Spaceship [
+                        effects#(malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end})
+                        flipTurns#true]}
                 end
             end
 
@@ -277,17 +272,16 @@ in
             fun {Shrink Spaceship N}
                 if N=<0 then raise unsupportedArgument(N) end
                 else
-                    spaceship(
-                        positions: {List.take Spaceship.positions {List.length Spaceship.positions}-N}
-                        effects: nil)
+                    {Record.adjoinList Spaceship [
+                        positions#({List.take Spaceship.positions {List.length Spaceship.positions}-N}) 
+                        effects#{List.subtract Spaceship.effects shrink(N)}]}
                 end
             end
 
             fun {DropSeismicCharge Spaceship Strategy}
-                spaceship(
-                    positions: Spaceship.positions
-                    effects: nil
-                    seismicCharge: {List.append Strategy Spaceship.seismicCharge})
+                {Record.adjoinList Spaceship [
+                    seismicCharge#{List.append Strategy Spaceship.seismicCharge}
+                    effects#{List.subtract Spaceship.effects dropSeismicCharge(Strategy)}]}
             end
 
         in
