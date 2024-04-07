@@ -80,24 +80,6 @@ in
             end
 
             /**
-             * Reads the content of the scenario file and makes it accessible.
-             * @arg FName : <str>
-             * @ret scenario : <record>
-             */
-            fun {AccessScenario Fname}
-                fun {Slurp FName}
-                    File = {New Open.file init(name:FName flags:[read])}
-                    Content = {File read(list:$ size:all)}
-                in
-                    {File close()}
-                    Content
-                end 
-            in
-                {Compiler.evalExpression {Slurp ScenarioFile} env _}
-            end
-
-
-            /**
              * Creates a list with N elements E.
              * @arg E : <A>
              * @arg N : <integer>
@@ -309,12 +291,19 @@ in
                 end
             end
 
+            fun {DropSeismicCharge Spaceship Strategy}
+                {Browse 'DropSeismicCharge'#Spaceship#Strategy}
+                S = {Record.adjoinAt Spaceship seismicCharge {List.append Strategy Spaceship.seismicCharge}} in
+                {Browse S} S
+            end
+
         in
             effects(
                 scrap: Scrap
                 revert: Revert
                 malware: Malware
-                shrink: Shrink)
+                shrink: Shrink
+                dropSeismicCharge: DropSeismicCharge)
         end
 
 
@@ -326,20 +315,6 @@ in
          * @ret : <spaceship>
          */
         fun {Next Spaceship Instruction}
-
-            /**
-             * Checks if the seismic charge list is coming to an end and adds 'false' if necessary.
-             * @arg Spaceship : <spaceship>
-             * @ret : <spaceship>
-             */
-            fun{CheckSeismicChargeList Spaceship}
-                if {List.length Spaceship.seismicCharge}==1 then
-                    spaceship(
-                        positions: Spaceship.positions
-                        effects: Spaceship.effects
-                        seismicCharge: {List.append Spaceship.seismicCharge false})
-                else Spaceship end
-            end
 
             /**
              * Applies the effects to the spaceship.
@@ -354,6 +329,7 @@ in
                     [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
                     [] malware(N) then {Effects.malware Spaceship N}
                     [] shrink(N) then {Effects.shrink Spaceship N}
+                    [] dropSeismicCharge(Strategy) then {Effects.dropSeismicCharge Spaceship Strategy}
                     else raise unsupportedEffect(Effect) end
                     end
                 end
@@ -379,13 +355,12 @@ in
             end
         in
             {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
-            local S1 S2 in
+            local S1 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
-                % 2. checks seismic charges
-                S2 = {CheckSeismicChargeList S1}
+                {Browse afterEffects#S1.effects#S1.seismicCharge}
                 % 3. apply instruction
-                {ApplyInstruction S2 Instruction}
+                {ApplyInstruction S1 Instruction}
             end
         end
 

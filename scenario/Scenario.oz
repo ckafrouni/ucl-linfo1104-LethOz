@@ -13,7 +13,8 @@ in
                     effects: nil
                     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
                     strategy: keyboard(left:'Left' right:'Right' intro:nil)
-                    seismicCharge:  [true false true true]
+                    % seismicCharge: NoBomb
+                    seismicCharge: true|false|true|true|NoBomb
                     malware: 0)
 
                 % spaceship(team:blue name:chris
@@ -43,6 +44,9 @@ in
             bonus(position:pos(x:12 y:3) color:'#808000' effect:malware(6) target:catcher)
 
             bonus(position:pos(x:14 y:3) color:red  effect:shrink(2) target:all)
+
+            bonus(position:pos(x:16 y:3) color:purple  effect:dropSeismicCharge(true|true|nil) target:catcher)
+            % Unused colors: blue, pink, brown
 
         ]
         bombs: [
