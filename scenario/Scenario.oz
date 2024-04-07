@@ -43,7 +43,7 @@ in
 
             bonus(position:pos(x:12 y:3) color:'#808000' effect:malware(6) target:catcher)
 
-            bonus(position:pos(x:14 y:3) color:red  effect:shrink(2) target:all)
+            bonus(position:pos(x:14 y:3) color:pink  effect:shrink(2) target:all)
 
             bonus(position:pos(x:16 y:3) color:purple  effect:dropSeismicCharge(true|true|nil) target:catcher)
             % Unused colors: blue, pink, brown

@@ -228,9 +228,7 @@ in
             fun {Scrap Spaceship}
                 Last = {List.last Spaceship.positions}
             in
-                spaceship(
-                    positions: {List.append Spaceship.positions [{Utils.prevPos Last Last.to}]}
-                    effects: nil)
+                {Record.adjoinList Spaceship [positions#{List.append Spaceship.positions [{Utils.prevPos Last Last.to}]} effects#{List.subtract Spaceship.effects scrap}]}
             end
 
             /**
@@ -243,9 +241,7 @@ in
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
                 in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
             in
-                spaceship(
-                    positions: {Utils.mapS {List.reverse Spaceship.positions} Aux nil}
-                    effects: nil)
+                {Record.adjoinList Spaceship [positions#{Utils.mapS {List.reverse Spaceship.positions} Aux nil} effects#{List.subtract Spaceship.effects revert}]}
             end
 
             /**
