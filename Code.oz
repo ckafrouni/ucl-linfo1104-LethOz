@@ -186,15 +186,12 @@ in
                 % The 'wormhole' effect is handled here.
                 case Spaceship.effects
                 of wormhole(x:X y:Y)|_ then
-                    spaceship(
-                        positions: {Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
-                        effects: nil
-                        seismicCharge: Spaceship.seismicCharge)
+                    {Record.adjoinList Spaceship [
+                        positions#{Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
+                        effects#{List.filter Spaceship.effects fun {$ E} E \= wormhole(X Y) end}]}
                 else
-                    spaceship(
-                        positions: {Utils.mapS Spaceship.positions Advance nil}
-                        effects: Spaceship.effects
-                        seismicCharge: Spaceship.seismicCharge)
+                    % TODO : Why ?
+                    {Record.adjoinAt {Record.subtract Spaceship flipTurns} positions {Utils.mapS Spaceship.positions Advance nil}}
                 end
             end
 
@@ -209,10 +206,7 @@ in
                     of H|T then pos(x:H.x y:H.y to:{Utils.dirAfterTurn Dir H.to})|T
                     else nil end
             in
-                spaceship(
-                    positions: Positions
-                    effects: Spaceship.effects
-                    seismicCharge: Spaceship.seismicCharge)
+                {Record.adjoinAt Spaceship positions Positions}
             end
         in
             instructions(
@@ -266,7 +260,10 @@ in
                         {Record.adjoinAt Spaceship 
                             effects {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}}
                         flipTurns}
-                else 
+                else
+                    % {Record.adjoinList Spaceship [
+                    %     effects#malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end}
+                    %     flipTurns#true ]}
                     {Record.adjoinAt 
                         {Record.adjoinAt
                             Spaceship
@@ -354,14 +351,14 @@ in
                 end
             end
         in
-            {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
+            % {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
             local S1 S2 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
-                {Browse afterEffects#S1.effects#S1.seismicCharge}
+                {Browse afterEffects#S1}
                 % 3. apply instruction
                 S2 = {ApplyInstruction S1 Instruction}
-                {Browse S2}
+                {Browse afterInstruction#S2}
                 S2
             end
         end
