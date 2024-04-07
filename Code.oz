@@ -41,9 +41,6 @@ local
     Next
     DecodeStrategy
 
-    % Scenario file to access 
-    ScenarioFile = Dossier#'/'#'scenario/Scenario.oz'
-
     % Width and height of the grid
     % (1 <= x <= W=24, 1 <= y <= H=24)
     % TODO (chris) : use these values.
@@ -162,8 +159,7 @@ in
                 repeat: Repeat
                 dirAfterTurn: DirAfterTurn
                 nextPos: NextPos
-                prevPos: PrevPos
-                accessScenario: AccessScenario)
+                prevPos: PrevPos)
         end
 
 
@@ -192,11 +188,13 @@ in
                 of wormhole(x:X y:Y)|_ then
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
-                        effects: nil)
+                        effects: nil
+                        seismicCharge: Spaceship.seismicCharge)
                 else
                     spaceship(
                         positions: {Utils.mapS Spaceship.positions Advance nil}
-                        effects: Spaceship.effects)
+                        effects: Spaceship.effects
+                        seismicCharge: Spaceship.seismicCharge)
                 end
             end
 
@@ -213,7 +211,8 @@ in
             in
                 spaceship(
                     positions: Positions
-                    effects: Spaceship.effects)
+                    effects: Spaceship.effects
+                    seismicCharge: Spaceship.seismicCharge)
             end
         in
             instructions(
@@ -292,9 +291,10 @@ in
             end
 
             fun {DropSeismicCharge Spaceship Strategy}
-                {Browse 'DropSeismicCharge'#Spaceship#Strategy}
-                S = {Record.adjoinAt Spaceship seismicCharge {List.append Strategy Spaceship.seismicCharge}} in
-                {Browse S} S
+                spaceship(
+                    positions: Spaceship.positions
+                    effects: nil
+                    seismicCharge: {List.append Strategy Spaceship.seismicCharge})
             end
 
         in
@@ -355,12 +355,14 @@ in
             end
         in
             {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
-            local S1 in
+            local S1 S2 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
                 {Browse afterEffects#S1.effects#S1.seismicCharge}
                 % 3. apply instruction
-                {ApplyInstruction S1 Instruction}
+                S2 = {ApplyInstruction S1 Instruction}
+                {Browse S2}
+                S2
             end
         end
 
