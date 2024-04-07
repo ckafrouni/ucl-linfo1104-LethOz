@@ -1,7 +1,7 @@
 /*
 
 [LINFO1104] - LethOz Company - Spaceship Game
-authors: Christophe Kafrouni, Nicolas ...
+authors: Christophe Kafrouni, Nicolas Vansteenkiste
 
 */
 
@@ -41,6 +41,9 @@ local
     Next
     DecodeStrategy
 
+    % Scenario file to access 
+    ScenarioFile = Dossier#'/'#'scenario/Scenario.oz'
+
     % Width and height of the grid
     % (1 <= x <= W=24, 1 <= y <= H=24)
     % TODO (chris) : use these values.
@@ -75,6 +78,24 @@ in
                 [] H|T then {F U H}|{MapS T F H}
                 end
             end
+
+            /**
+             * Reads the content of the scenario file and makes it accessible.
+             * @arg FName : <str>
+             * @ret scenario : <record>
+             */
+            fun {AccessScenario Fname}
+                fun {Slurp FName}
+                    File = {New Open.file init(name:FName flags:[read])}
+                    Content = {File read(list:$ size:all)}
+                in
+                    {File close()}
+                    Content
+                end 
+            in
+                {Compiler.evalExpression {Slurp ScenarioFile} env _}
+            end
+
 
             /**
              * Creates a list with N elements E.
@@ -159,7 +180,8 @@ in
                 repeat: Repeat
                 dirAfterTurn: DirAfterTurn
                 nextPos: NextPos
-                prevPos: PrevPos)
+                prevPos: PrevPos
+                accessScenario: AccessScenario)
         end
 
 
@@ -279,9 +301,12 @@ in
              * @ret : <spaceship>
              */
             fun {Shrink Spaceship N}
-                spaceship(
-                    positions: {List.take Spaceship.positions {List.length Spaceship.positions}-N}
-                    effects: nil)
+                if N=<0 then raise unsupportedArgument(N) end
+                else
+                    spaceship(
+                        positions: {List.take Spaceship.positions {List.length Spaceship.positions}-N}
+                        effects: nil)
+                end
             end
 
         in
@@ -301,6 +326,21 @@ in
          * @ret : <spaceship>
          */
         fun {Next Spaceship Instruction}
+
+            /**
+             * Checks if the seismic charge list is coming to an end and adds 'false' if necessary.
+             * @arg Spaceship : <spaceship>
+             * @ret : <spaceship>
+             */
+            fun{CheckSeismicChargeList Spaceship}
+                if {List.length Spaceship.seismicCharge}==1 then
+                    spaceship(
+                        positions: Spaceship.positions
+                        effects: Spaceship.effects
+                        seismicCharge: {List.append Spaceship.seismicCharge false})
+                else Spaceship end
+            end
+
             /**
              * Applies the effects to the spaceship.
              * @arg Spaceship : <spaceship>
@@ -338,12 +378,14 @@ in
                 end
             end
         in
-            {Browse Instruction#Spaceship.effects} % {Browse Spaceship}
-            local S1 in
+            {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
+            local S1 S2 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
-                % 2. apply instruction
-                {ApplyInstruction S1 Instruction}
+                % 2. checks seismic charges
+                S2 = {CheckSeismicChargeList S1}
+                % 3. apply instruction
+                {ApplyInstruction S2 Instruction}
             end
         end
 
