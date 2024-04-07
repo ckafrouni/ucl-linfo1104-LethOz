@@ -30,6 +30,12 @@ EBNF Grammar for the spaceship game
 
 */
 
+% TODO : Write a Scenario.oz file that tests all the features of the game.
+% TODO : Handle the wormhole effect in a more elegant way.
+% TODO : Why does the flipTurns feature need to be removed in the forward instruction when using AdjoinAt ?
+% TODO : Raise exceptions when an unsupported instruction or effect is encountered.
+% TODO : Fix comments. (e.g. the file header)
+
 local
     % Please replace this path with your own working directory that contains LethOzLib.ozf
     Dossier = {Property.condGet cwdir '.'}
@@ -43,7 +49,6 @@ local
 
     % Width and height of the grid
     % (1 <= x <= W=24, 1 <= y <= H=24)
-    % TODO (chris) : use these values.
     W = 24
     H = 24
 in
@@ -184,6 +189,7 @@ in
                 end
             in
                 % The 'wormhole' effect is handled here.
+                % TODO (chris) : Handle the wormhole effect in a more elegant way.
                 case Spaceship.effects
                 of wormhole(x:X y:Y)|_ then
                     {Record.adjoinList Spaceship [
@@ -228,7 +234,9 @@ in
             fun {Scrap Spaceship}
                 Last = {List.last Spaceship.positions}
             in
-                {Record.adjoinList Spaceship [positions#{List.append Spaceship.positions [{Utils.prevPos Last Last.to}]} effects#{List.subtract Spaceship.effects scrap}]}
+                {Record.adjoinList Spaceship [
+                    positions#{List.append Spaceship.positions [{Utils.prevPos Last Last.to}]} 
+                    effects#{List.subtract Spaceship.effects scrap}]}
             end
 
             /**
@@ -241,24 +249,27 @@ in
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
                 in pos(x:Pos.x y:Pos.y to:{Utils.dirAfterTurn revert To}) end
             in
-                {Record.adjoinList Spaceship [positions#{Utils.mapS {List.reverse Spaceship.positions} Aux nil} effects#{List.subtract Spaceship.effects revert}]}
+                {Record.adjoinList Spaceship [
+                    positions#{Utils.mapS {List.reverse Spaceship.positions} Aux nil} 
+                    effects#{List.subtract Spaceship.effects revert}]}
             end
 
             /**
-             * Malware effect -> inverts the left and right command for every spaceship excepts the catcher's for N turns
+             * Malware effect -> inverts the left and right instructions for N turns
              * @arg Spaceship : <spaceship>
              * @arg N : <integer>
              * @ret : <spaceship>
              */
             fun {Malware Spaceship N} 
+                E = {List.subtract Spaceship.effects malware(N)}
+            in
                 if N == 0 then
                     {Record.subtract 
-                        {Record.adjoinAt Spaceship 
-                            effects {List.filter Spaceship.effects fun {$ E} E \= malware(0) end}}
+                        {Record.adjoinAt Spaceship effects E}
                         flipTurns}
                 else
                     {Record.adjoinList Spaceship [
-                        effects#(malware(N-1)|{List.filter Spaceship.effects fun {$ E} E \= malware(N) end})
+                        effects#(malware(N-1)|E)
                         flipTurns#true]}
                 end
             end
@@ -341,14 +352,11 @@ in
                 end
             end
         in
-            % {Browse Instruction#Spaceship.effects#Spaceship.seismicCharge} % {Browse Spaceship}
             local S1 S2 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
-                {Browse afterEffects#S1}
                 % 3. apply instruction
                 S2 = {ApplyInstruction S1 Instruction}
-                {Browse afterInstruction#S2}
                 S2
             end
         end
@@ -361,7 +369,6 @@ in
          * @arg Strategy : <strategy>
          */
         fun {DecodeStrategy Strategy}
-            % TODO (chris) : Can we make this more efficient ? Threads or not having to call flatten ?
             /**
              * Converts an instruction into a function that calls Next.
              * @arg Instruction : <instruction>

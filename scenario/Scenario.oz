@@ -14,16 +14,14 @@ in
                     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
                     strategy: keyboard(left:'Left' right:'Right' intro:nil)
                     % seismicCharge: NoBomb
-                    seismicCharge: true|false|true|true|NoBomb
-                    malware: 0)
+                    seismicCharge: true|false|true|true|NoBomb)
 
                 % spaceship(team:blue name:chris
                 %     positions: [pos(x:18 y:15 to:west) pos(x:19 y:15 to:west) pos(x:19 y:15 to:west)]
                 %     effects: nil
                 %     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
                 %     strategy: keyboard(left:'d' right:'f' intro:nil)
-                %     seismicCharge: NoBomb
-                %     prev_position: nil)
+                %     seismicCharge: NoBomb)
             ]
         bonuses: [
             bonus(position:pos(x:23 y:3) color:red  effect:revert target:catcher)
