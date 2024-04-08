@@ -3,25 +3,24 @@
 [LINFO1104] - LethOz Company - Spaceship Game
 authors: Christophe Kafrouni, Nicolas Vansteenkiste
 
-*/
-
-/*
+This file contains the implementation of the spaceship game using the LethOzLib library
+and based on the following EBNF grammar:
 
 EBNF Grammar for the spaceship game
 
 <instruction> ::= forward | turn(left) | turn(right)
 <direction> ::= north | south | west | east
 <P> ::= <integer x such that 1 <= x <= 24>
+<pos> ::= pos(x:<P> y:<P> to:<direction>)
+<effect> ::= scrap | revert | malware(<integer>) | shrink(<integer>) | dropSeismicCharge(<strategy>) | wormhole(x:<P> y:<P>)
+<seismic_charge> ::= <list <boolean>> % unbounded list of booleans
 
 <spaceship> ::=
     spaceship(
-        positions: [
-            pos(x:<P> y:<P> to:<direction>) % Head
-            ...
-            pos(x:<P> y:<P> to:<direction>) % Tail
-        ]
-        effects: [scrap|revert|wormhole(x:<P> y:<P>)|... ...]
-    )
+        positions: <list <pos>>
+        effects: <list <effect>>
+        seismicCharge: <seismic_charge>
+        ...)
 
 <strategy> ::=
     <instruction> '|' <strategy>
@@ -31,16 +30,10 @@ EBNF Grammar for the spaceship game
 */
 
 % TODO : Write a Scenario.oz file that tests all the features of the game.
-% TODO : Handle the wormhole effect in a more elegant way.
-% TODO : Why does the flipTurns feature need to be removed in the forward instruction when using AdjoinAt ?
-% TODO : Raise exceptions when an unsupported instruction or effect is encountered.
-% TODO : Fix comments. (e.g. the file header)
 
 local
     % Please replace this path with your own working directory that contains LethOzLib.ozf
     Dossier = {Property.condGet cwdir '.'}
-    % Dossier = {Property.condGet cwdir '/home/nicolas/Progr/Projet OZ/ucl-linfo1104-LethOz'}
-    % Dossier = {Property.condGet cwdir 'C:\\Users\Thomas\Documents\UCL\Oz\Projet'} % Windows example.
     LethOzLib
 
     % The two function you have to implement
@@ -61,7 +54,7 @@ in
     % ↓    ↓    ↓    ↓    ↓ %
 
     local
-        % Namespaces
+        % Namespaces (They are used to group related functions together)
         Utils Instructions Effects
     in
         /*-------------------*
@@ -181,23 +174,22 @@ in
                 fun {Advance PrevPos Pos}
                     To = if PrevPos == nil then Pos.to else PrevPos.to end
                 in
-                    if PrevPos == nil then
+                    if PrevPos == nil then % Head
                         {Utils.nextPos Pos To}
                     else
-                        PrevPos
+                        PrevPos % Rest of the body
                     end
                 end
             in
                 % The 'wormhole' effect is handled here.
-                % TODO (chris) : Handle the wormhole effect in a more elegant way.
-                case Spaceship.effects
-                of wormhole(x:X y:Y)|_ then
-                    {Record.adjoinList Spaceship [
-                        positions#{Utils.mapS Spaceship.positions Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}
-                        effects#{List.filter Spaceship.effects fun {$ E} E \= wormhole(X Y) end}]}
+                if {Value.hasFeature Spaceship wormhole} then X = (Spaceship.wormhole).1 Y = (Spaceship.wormhole).2 in
+                    {Record.adjoinAt {Record.subtract Spaceship wormhole} 
+                        positions {Utils.mapS Spaceship.positions 
+                            Advance {Utils.nextPos pos(x:X y:Y to:(Spaceship.positions.1).to) (Spaceship.positions.1).to}}}
                 else
-                    % TODO : Why ?
-                    {Record.adjoinAt {Record.subtract Spaceship flipTurns} positions {Utils.mapS Spaceship.positions Advance nil}}
+                    {Record.adjoinAt {Record.subtract Spaceship flipTurns} 
+                        positions {Utils.mapS Spaceship.positions 
+                            Advance nil}}
                 end
             end
 
@@ -255,6 +247,24 @@ in
             end
 
             /**
+             * Wormhole effect -> teleports the spaceship to the position (X, Y)
+             * This function adds the wormhole to the spaceship's record.
+             * But it is handled in Instructions.forward.
+             * @arg Spaceship : <spaceship>
+             * @arg X : <P>
+             * @arg Y : <P>
+             * @ret : <spaceship>
+             */
+            fun {Wormhole Spaceship X Y}
+                if (X < 1) orelse (X > W) orelse (Y < 1) orelse (Y > H) then
+                    raise unsupportedArgument(X Y) end
+                end
+                {Record.adjoinList Spaceship [
+                    wormhole#(X#Y)
+                    effects#{List.subtract Spaceship.effects wormhole(x:X y:Y)}]}
+            end
+
+            /**
              * Malware effect -> inverts the left and right instructions for N turns
              * @arg Spaceship : <spaceship>
              * @arg N : <integer>
@@ -289,16 +299,24 @@ in
                 end
             end
 
-            fun {DropSeismicCharge Spaceship Strategy}
+            /**
+             * DropSeismicCharge effect -> Inserts the seismic charge strategy
+             * into the spaceship's seismic charge list.
+             * @arg Spaceship : <spaceship>
+             * @arg SeismicCharge : <seismic_charge>
+             * @ret : <spaceship>
+             */
+            fun {DropSeismicCharge Spaceship SeismicCharge}
                 {Record.adjoinList Spaceship [
-                    seismicCharge#{List.append Strategy Spaceship.seismicCharge}
-                    effects#{List.subtract Spaceship.effects dropSeismicCharge(Strategy)}]}
+                    seismicCharge#{List.append SeismicCharge Spaceship.seismicCharge}
+                    effects#{List.subtract Spaceship.effects dropSeismicCharge(SeismicCharge)}]}
             end
 
         in
             effects(
                 scrap: Scrap
                 revert: Revert
+                wormhole: Wormhole
                 malware: Malware
                 shrink: Shrink
                 dropSeismicCharge: DropSeismicCharge)
@@ -324,7 +342,7 @@ in
                     case Effect
                     of scrap then {Effects.scrap Spaceship}
                     [] revert then {Effects.revert Spaceship}
-                    [] wormhole(x:_ y:_) then Spaceship % Skipped as it is handled in Instructions.forward
+                    [] wormhole(x:X y:Y) then {Effects.wormhole Spaceship X Y}
                     [] malware(N) then {Effects.malware Spaceship N}
                     [] shrink(N) then {Effects.shrink Spaceship N}
                     [] dropSeismicCharge(Strategy) then {Effects.dropSeismicCharge Spaceship Strategy}
@@ -343,10 +361,10 @@ in
                 case Instruction
                 of forward then {Instructions.forward Spaceship}
                 [] turn(left) then 
-                    if {Value.hasFeature Spaceship 'flipTurns'} then {Instructions.turnRight Spaceship}
+                    if {Value.hasFeature Spaceship flipTurns} then {Instructions.turnRight Spaceship}
                     else {Instructions.turnLeft Spaceship} end
                 [] turn(right) then 
-                    if {Value.hasFeature Spaceship 'flipTurns'} then {Instructions.turnLeft Spaceship}
+                    if {Value.hasFeature Spaceship flipTurns} then {Instructions.turnLeft Spaceship}
                     else {Instructions.turnRight Spaceship} end
                 else raise unsupportedInstruction(Instruction) end
                 end
@@ -367,6 +385,7 @@ in
          * passed as argument.
          *
          * @arg Strategy : <strategy>
+         * @ret : <list <fun (spaceship) : spaceship>>
          */
         fun {DecodeStrategy Strategy}
             /**
@@ -378,9 +397,8 @@ in
                 case Instruction
                 of forward then fun {$ Spaceship} {Next Spaceship forward} end
                 [] turn(D) then fun {$ Spaceship} {Next Spaceship turn(D)} end
-                [] repeat(Strategy times:N) then E in
-                    thread E = {DecodeStrategy Strategy} end
-                    thread {Utils.repeat E N} end
+                [] repeat(Strategy times:N) then E in 
+                    {Utils.repeat {DecodeStrategy Strategy} N} % Expand the strategy
                 else raise unsupportedInstruction(Instruction) end
                 end
             end
