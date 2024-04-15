@@ -449,7 +449,7 @@ fun {Stage Config} % inprogress / win(green) / tie([green blue])
                  fun{$ S} S.team end}}
    MovingSpaceships = {CanMove Config}
    % Check for a spaceship that meets the win condition based on its length
-   WinningSpaceships = {Filter Config.spaceships fun{$ S} {List.length S.positions} == 10 end}
+   WinningSpaceships = {Filter Config.spaceships fun{$ S} {List.length S.positions} >= 10 end}
 in
    % If there's exactly one winning spaceship, declare win for its team
       case {Length WinningSpaceships} % TODO colin check puis remove

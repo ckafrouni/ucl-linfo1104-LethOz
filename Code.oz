@@ -293,9 +293,15 @@ in
             fun {Shrink Spaceship N}
                 if N=<0 then raise unsupportedArgument(N) end
                 else
-                    {Record.adjoinList Spaceship [
-                        positions#({List.take Spaceship.positions {List.length Spaceship.positions}-N}) 
+                    if N >= {List.length Spaceship.positions} then
+                        {Record.adjoinList Spaceship [
+                        positions#[Spaceship.positions.1] 
                         effects#{List.subtract Spaceship.effects shrink(N)}]}
+                    else
+                        {Record.adjoinList Spaceship [
+                            positions#({List.take Spaceship.positions {List.length Spaceship.positions}-N}) 
+                            effects#{List.subtract Spaceship.effects shrink(N)}]}
+                    end
                 end
             end
 
@@ -397,7 +403,7 @@ in
                 case Instruction
                 of forward then fun {$ Spaceship} {Next Spaceship forward} end
                 [] turn(D) then fun {$ Spaceship} {Next Spaceship turn(D)} end
-                [] repeat(Strategy times:N) then E in 
+                [] repeat(Strategy times:N) then
                     {Utils.repeat {DecodeStrategy Strategy} N} % Expand the strategy
                 else raise unsupportedInstruction(Instruction) end
                 end
@@ -419,7 +425,7 @@ in
             % Graphical mode
             debug: true
             % Steps per second, 0 for step by step. (press 'Space' to go one step further)
-            frameRate: 2
+            frameRate: 7
         )
         R = {LethOzLib.play Dossier#'/'#Options.scenario Next DecodeStrategy Options}
     in
