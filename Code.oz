@@ -379,7 +379,7 @@ in
             local S1 S2 in
                 % 1. apply effects
                 S1 = {ApplyEffects Spaceship}
-                % 3. apply instruction
+                % 2. apply instruction
                 S2 = {ApplyInstruction S1 Instruction}
                 S2
             end

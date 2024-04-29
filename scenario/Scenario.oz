@@ -10,7 +10,7 @@ in
                     positions: [pos(x:6 y:6 to:east) pos(x:5 y:6 to:east) pos(x:4 y:6 to:east)]
                     effects: nil
                     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:12) turn(left) repeat([forward] times:2) turn(right) repeat([forward] times:2) turn(left) repeat([forward] times:12)]
-                    strategy: keyboard(left:'Left' right:'Right' intro:[repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:12) turn(left) repeat([forward] times:2) turn(right) repeat([forward] times:2) turn(left) repeat([forward] times:5) turn(left) repeat([forward] times:6) turn(left) repeat([forward] times:5) turn(right) repeat([forward] times:2) turn(left) repeat([forward] times:15) turn(left)])
+                    strategy: keyboard(left:'Left' right:'Right' intro:[repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:12) turn(left) repeat([forward] times:2) turn(right) repeat([forward] times:2) turn(left) repeat([forward] times:5) turn(left) repeat([forward] times:6) turn(left) repeat([forward] times:5) turn(right) repeat([forward] times:2) turn(left) repeat([forward] times:15) turn(left) repeat([forward] times:2) turn(right) turn(left) turn(right) turn(right) turn(left)])
                     % seismicCharge: NoBomb)
                     seismicCharge: false|false|true|false|false|false|true|false|false|false|true|NoBomb)
 
@@ -18,7 +18,7 @@ in
                     positions: [pos(x:18 y:15 to:west) pos(x:19 y:15 to:west) pos(x:19 y:15 to:west)]
                     effects: nil
                     % strategy: [repeat([forward] times:6) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) repeat([forward] times:4)]
-                    strategy: keyboard(left:'d' right:'f' intro:[repeat([forward] times:5) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) turn(right) repeat([forward] times:13) repeat([turn(left)] times:2) repeat([turn(right)] times:2) turn(left) turn(right) repeat([repeat([turn(left) forward] times:2) repeat([turn(right) forward] times:2)] times:2) forward turn(left) turn(left) forward turn(right) repeat([forward] times:12) turn(right)])
+                    strategy: keyboard(left:'d' right:'f' intro:[repeat([forward] times:5) turn(right) repeat([forward] times:4) turn(right) repeat([forward] times:4) repeat([turn(left)] times:2) turn(right) repeat([forward] times:13) repeat([turn(left)] times:2) repeat([turn(right)] times:2) turn(left) turn(right) repeat([repeat([turn(left) forward] times:2) repeat([turn(right) forward] times:2)] times:2) forward turn(left) turn(left) forward turn(right) repeat([forward] times:12) turn(right) repeat([forward] times:15) turn(left) repeat([forward] times:4) turn(left) forward turn(right) repeat([forward] times:15)  turn(left) forward turn(right) turn(left) forward turn(right) turn(left) forward turn(right)])
                     seismicCharge: false|false|false|true|false|false|false|true|NoBomb)
             ]
         bonuses: [
