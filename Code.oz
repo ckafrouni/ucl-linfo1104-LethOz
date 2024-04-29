@@ -29,7 +29,6 @@ EBNF Grammar for the spaceship game
 
 */
 
-% TODO : Write a Scenario.oz file that tests all the features of the game.
 
 local
     % Please replace this path with your own working directory that contains LethOzLib.ozf
